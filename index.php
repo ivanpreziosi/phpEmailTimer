@@ -44,22 +44,11 @@ date_default_timezone_set(TIME_ZONE);
  * Recupera e valida i parametri dalla query string
  */
 $time = $_GET['time'] ?? null;
-$token = $_GET['tok'] ?? "";
-
-// Token di sicurezza per prevenire accessi non autorizzati
-// IMPORTANTE: In produzione, sostituire con un token sicuro e gestirlo tramite variabili d'ambiente
-const SECURITY_TOKEN = 'YOUR-TOKEN';
 
 // Validazione del parametro time
 if (!$time) {
     http_response_code(403);
     die("Errore: Parametro 'time' mancante");
-}
-
-// Validazione del token di sicurezza
-if ($token !== SECURITY_TOKEN) {
-    http_response_code(403);
-    die("Errore: Token non valido");
 }
 
 // Verifica esistenza file richiesti
