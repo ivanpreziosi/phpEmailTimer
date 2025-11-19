@@ -7,7 +7,6 @@
  * 
  * Parametri GET richiesti:
  * - time: timestamp o stringa data in formato riconoscibile da strtotime()
- * - tok: token di sicurezza per prevenire accessi non autorizzati
  * 
  * @author  Ivan Preziosi - forked and updated from https://github.com/goors/php-gif-countdown
  * @version 2.0
