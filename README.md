@@ -1,8 +1,9 @@
 # PHP EMAIL TIMER
-
+<img src="hourglass.jpg" height="200" align="right"/>
 This library generates an animated GIF that visualizes a live countdown to a target date/time.
 Each frame represents one second, up to a configurable maximum.
 It is based on (and updated from) the original project by goors/php-gif-countdown, extended with improved rendering, validation, and configuration options.
+<br><br><br><br><br>
 
 ## Features
 
