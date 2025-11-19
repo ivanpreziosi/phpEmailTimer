@@ -48,7 +48,7 @@ $token = $_GET['tok'] ?? "";
 
 // Token di sicurezza per prevenire accessi non autorizzati
 // IMPORTANTE: In produzione, sostituire con un token sicuro e gestirlo tramite variabili d'ambiente
-const SECURITY_TOKEN = 'a0ds978f(")HN';
+const SECURITY_TOKEN = 'YOUR-TOKEN';
 
 // Validazione del parametro time
 if (!$time) {
