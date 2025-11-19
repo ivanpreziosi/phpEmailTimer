@@ -10,7 +10,6 @@ It is based on (and updated from) the original project by goors/php-gif-countdow
 - Generates a second-by-second animated GIF countdown
 - Customizable background image, font, size, and offsets
 - Anti-aliased text rendering with alpha preservation
-- Secure request mechanism via configurable token
 - Fully timezone-aware countdown calculation
 - Zero-padding and formatting for multi-day countdowns
 - Outputs directly as a GIF stream with no caching
@@ -63,7 +62,7 @@ The script exposes a GIF endpoint that can be included directly in HTML `<img>` 
 Example:
 
 ```html
-<img src="path_to_the_library/index.php?time=2025-12-31%2023:59:59&tok=YOUR_TOKEN">
+<img src="path_to_the_library/index.php?time=2025-12-31%2023:59:59">
 ```
 
 ### Required GET Parameters
@@ -71,15 +70,11 @@ Example:
 | Parameter | Description                                               |
 | --------- | --------------------------------------------------------- |
 | `time`    | A timestamp or any date string supported by `strtotime()` |
-| `tok`     | Security token to authorize the request                   |
-
-Your request must include a valid token.
-Replace the constant `SECURITY_TOKEN` in the script with a secure value or load it from the environment.
 
 ### Example With URL Encoding
 
 ```html
-<img src="path_to_the_library/index.php?time=2025-07-20T18%3A00%3A00&tok=YOUR_TOKEN">
+<img src="path_to_the_library/index.php?time=2025-07-20T18%3A00%3A00">
 ```
 
 ### Countdown Display Format
@@ -120,7 +115,6 @@ const FONT_Y_OFFSET   = 95;
 const FRAME_DELAY     = 100; // centiseconds (100 = 1s)
 const MAX_FRAMES      = 60;  // total GIF frames
 const TIME_ZONE       = 'Europe/Rome';
-const SECURITY_TOKEN  = 'your-custom-token';
 ```
 
 ### What You Can Customize
@@ -132,7 +126,6 @@ const SECURITY_TOKEN  = 'your-custom-token';
 * Frame delay
 * Maximum frames
 * Timezone
-* Security token
 
 ---
 
@@ -142,34 +135,26 @@ const SECURITY_TOKEN  = 'your-custom-token';
 
 ```html
 <p>Event Countdown:</p>
-<img src="/path_to_the_library/index.php?time=2026-01-01%2000:00:00&tok=YOUR_TOKEN">
+<img src="/path_to_the_library/index.php?time=2026-01-01%2000:00:00">
 ```
 
 ### 2. Dynamic Email (as long as your server allows external GIFs)
 
 ```html
-<img src="https://example.com/path_to_the_library/index.php?time={{deadline}}&tok={{token}}">
+<img src="https://example.com/path_to_the_library/index.php?time={{deadline}}">
 ```
 
 ### 3. Display in a Dashboard or Admin Panel
 
 ```php
-echo '<img src="path_to_the_library/index.php?time=' . urlencode($deadline) . '&tok=' . $token . '">';
+echo '<img src="path_to_the_library/index.php?time=' . urlencode($deadline) . '">';
 ```
 
 ---
 
 ## Security Considerations
 
-* **Always** replace `SECURITY_TOKEN` with a secret value.
-* Prefer loading the token from an environment variable:
-
-```php
-const SECURITY_TOKEN = getenv('COUNTDOWN_TOKEN');
-```
-
 * Ensure access to this script is rate-limited if used publicly.
-* Do not expose your token in public HTML unless it is temporary or domain-restricted.
 
 ---
 
@@ -180,7 +165,7 @@ The script returns meaningful HTTP status codes:
 | Code    | Meaning                                                            |
 | ------- | ------------------------------------------------------------------ |
 | **400** | Invalid date format                                                |
-| **403** | Missing/invalid token or missing `time` parameter                  |
+| **403** | Missing `time` parameter                                           |
 | **500** | Missing files, corrupted base image or font, GIF generation errors |
 
 ---
