@@ -2,13 +2,13 @@
 
 ![PHP Version](https://img.shields.io/badge/php-%3E%3D7.4-777bb4)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/version-2.1-blue)
-![GD Extension](https://img.shields.io/badge/GD-required-orange)
+![Status](https://img.shields.io/badge/version-1.0-blue)
+![GD Extension](https://img.shields.io/badge/GD-required-orange)<br>
 <img src="hourglass.jpg" height="200" align="right"/>
 This library generates an animated GIF that visualizes a live countdown to a target date/time.
 Each frame represents one second, up to a configurable maximum.
 <br><br>
-It is based on (and updated from) the original project by goors/php-gif-countdown, extended with improved rendering, validation, and configuration options.
+It is based on the original project by goors/php-gif-countdown, extended with improved rendering, validation, cache and configuration options.
 <br><br>
 
 ## Features
@@ -18,7 +18,7 @@ It is based on (and updated from) the original project by goors/php-gif-countdow
 - Anti-aliased text rendering with alpha preservation
 - Fully timezone-aware countdown calculation
 - Zero-padding and formatting for multi-day countdowns
-- Optional filesystem-based caching to reduce server load (1 GIF per minute per unique timestamp)
+- Optional filesystem-based caching to reduce server load
 
 ---
 
