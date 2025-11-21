@@ -1,4 +1,9 @@
 # PHP EMAIL TIMER
+
+![PHP Version](https://img.shields.io/badge/php-%3E%3D7.4-777bb4)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/version-2.1-blue)
+![GD Extension](https://img.shields.io/badge/GD-required-orange)
 <img src="hourglass.jpg" height="200" align="right"/>
 This library generates an animated GIF that visualizes a live countdown to a target date/time.
 Each frame represents one second, up to a configurable maximum.
@@ -13,13 +18,13 @@ It is based on (and updated from) the original project by goors/php-gif-countdow
 - Anti-aliased text rendering with alpha preservation
 - Fully timezone-aware countdown calculation
 - Zero-padding and formatting for multi-day countdowns
-- Outputs directly as a GIF stream with no caching
+- Optional filesystem-based caching to reduce server load (1 GIF per minute per unique timestamp)
 
 ---
 
 ## Requirements
 
-* **PHP 7.4+** 
+* **PHP 7.4+**
 * **GD Extension** with TrueType font support
 * A PNG base image (`base.png`)
 * A TrueType font file (`font.ttf`)
@@ -41,6 +46,7 @@ Ensure the following files exist in the repository root:
 base.png
 font.ttf
 AnimatedGif.php
+CacheManager.php
 index.php
 ```
 
@@ -130,6 +136,59 @@ const TIME_ZONE       = 'Europe/Rome';
 
 ---
 
+## 🗄️ Caching System (Optional)
+
+Starting from version **2.1**, the library includes a lightweight caching layer that prevents excessive regeneration of the GIF countdown.
+
+### Why Caching?
+
+Generating a GIF frame-by-frame is CPU-intensive.  
+If many clients request the same countdown (e.g., in emails), the server might regenerate identical animations multiple times per second.
+
+The caching system ensures:
+
+- **At most one GIF is generated every 60 seconds** per unique `time` parameter  
+- Subsequent requests within that minute are served instantly from disk  
+- Server CPU usage is drastically reduced  
+
+### How It Works
+
+Each request is keyed using the `time` parameter:
+
+```
+countdown_<md5($time)>.gif
+```
+
+The generated GIF is stored in the `cache/` directory.
+
+For the next 60 seconds:
+
+- If the cached GIF exists and is fresh → it is returned immediately  
+- If the cache is expired or missing → a new GIF is generated and stored  
+
+### Enabling the Cache
+
+The caching layer is automatically active if the following file exists:
+
+```
+CacheManager.php
+```
+
+and the `cache/` directory is writable.
+
+No configuration is required.
+
+### Cache Lifetime
+
+The default TTL is **60 seconds**.  
+You may change it in the script where `CacheManager` is initialized:
+
+```php
+$cache = new CacheManager(__DIR__ . '/cache', $cacheKey, 60);
+```
+
+---
+
 ## Integration Examples
 
 ### 1. Embedding in a Website
@@ -176,11 +235,30 @@ The script returns meaningful HTTP status codes:
 Pull requests are welcome!
 Areas that might benefit from improvement:
 
-* Optional caching layer
+* Optional caching layer (implemented in v2.1)
 * Variable GIF dimensions
 * Multiple themes or color schemes
 * Support for transparency-based rendering
 * Composer packaging
+
+---
+
+## Changelog
+
+### v2.1
+- Added filesystem-based caching layer (1 GIF/minute per timestamp)
+- Added CacheManager class
+- Updated README with new documentation
+- Improved overall formatting and badges
+
+### v2.0
+- Major refactor and cleanup
+- Improved rendering quality
+- Better error handling
+- Full timezone support
+
+### v1.x
+- Forked from goors/php-gif-countdown
 
 ---
 
@@ -191,3 +269,4 @@ See `LICENSE` for details.
 
 ---
 Forked and updated from https://github.com/goors/php-gif-countdown
+
