@@ -1,3 +1,5 @@
+<img src="example.gif" align="center"/>
+
 # PHP EMAIL TIMER
 
 ![PHP Version](https://img.shields.io/badge/php-%3E%3D7.4-777bb4)
@@ -59,8 +61,6 @@ php -m | grep gd
 If not present, enable it in your PHP configuration.
 
 ---
-
-<img src="example.gif" align="center"/>
 
 ## Usage
 
