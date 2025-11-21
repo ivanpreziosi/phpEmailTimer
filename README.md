@@ -18,7 +18,7 @@ This library generates an animated GIF that visualizes a live countdown to a tar
 Each frame represents one second, up to a configurable maximum.
 <br><br>
 It is based on the original project by goors/php-gif-countdown, extended with improved rendering, validation, cache and configuration options.
-<br><br>
+<br><br><br><br>
 
 ## Features
 
