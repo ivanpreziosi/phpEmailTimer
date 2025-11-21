@@ -138,7 +138,7 @@ const TIME_ZONE       = 'Europe/Rome';
 
 ## 🗄️ Caching System (Optional)
 
-Starting from version **2.1**, the library includes a lightweight caching layer that prevents excessive regeneration of the GIF countdown.
+The library includes a lightweight caching layer that prevents excessive regeneration of the GIF countdown.
 
 ### Why Caching?
 
@@ -235,7 +235,6 @@ The script returns meaningful HTTP status codes:
 Pull requests are welcome!
 Areas that might benefit from improvement:
 
-* Optional caching layer (implemented in v2.1)
 * Variable GIF dimensions
 * Multiple themes or color schemes
 * Support for transparency-based rendering
@@ -245,19 +244,19 @@ Areas that might benefit from improvement:
 
 ## Changelog
 
-### v2.1
+### v1.0
 - Added filesystem-based caching layer (1 GIF/minute per timestamp)
 - Added CacheManager class
 - Updated README with new documentation
 - Improved overall formatting and badges
 
-### v2.0
+### v0.5
 - Major refactor and cleanup
 - Improved rendering quality
 - Better error handling
 - Full timezone support
 
-### v1.x
+### v0.1
 - Forked from goors/php-gif-countdown
 
 ---
