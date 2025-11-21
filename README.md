@@ -59,7 +59,9 @@ php -m | grep gd
 If not present, enable it in your PHP configuration.
 
 ---
+
 <img src="example.gif" align="center"/>
+
 ## Usage
 
 ### Basic HTTP Call
