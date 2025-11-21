@@ -14,6 +14,32 @@
 
 // Carica la classe per la generazione di GIF animate
 require_once 'AnimatedGif.php';
+require_once 'CacheManager.php';
+use EmailTimer\CacheManager;
+
+// ============================================================================
+// CACHE
+// ============================================================================
+// ============================================================================
+// CONFIGURAZIONE CACHE
+// ============================================================================
+const CACHE_DIR = __DIR__ . '/cache';
+const CACHE_FILENAME = 'countdown.gif';
+const CACHE_TIMETOLIVE = 60; //TTL IN SECONDI
+
+$cache = new CacheManager(
+	CACHE_DIR,  // cartella cache
+	CACHE_FILENAME,
+	CACHE_TIMETOLIVE // TTL in secondi
+);
+
+// Se la GIF in cache è valida, serviamo subito quella
+$cached = $cache->getCachedFilePath();
+if ($cached) {
+	header('Content-Type: image/gif');
+	readfile($cached);
+	exit; //fine esecuzione
+}
 
 // ============================================================================
 // CONFIGURAZIONE COUNTDOWN
@@ -47,7 +73,7 @@ $time = $_GET['time'] ?? null;
 // Validazione del parametro time
 if (!$time) {
     http_response_code(403);
-    die("Errore: Parametro 'time' mancante");
+    die("Errore: Errore nella request.");
 }
 
 // Verifica esistenza file richiesti
@@ -131,9 +157,6 @@ for ($i = 0; $i < MAX_FRAMES; $i++) {
         $delays[] = FRAME_DELAY;
         ob_end_clean();
         
-        // Libera la memoria dell'immagine
-        imagedestroy($image);
-        
         // Countdown terminato, esci dal loop
         break;
         
@@ -164,9 +187,6 @@ for ($i = 0; $i < MAX_FRAMES; $i++) {
         $frames[] = ob_get_contents();
         $delays[] = FRAME_DELAY;
         ob_end_clean();
-        
-        // Libera la memoria dell'immagine
-        imagedestroy($image);
     }
     
     // Avanza di un secondo per il prossimo frame
@@ -188,18 +208,24 @@ header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 
 // ============================================================================
-// GENERAZIONE E OUTPUT GIF ANIMATA
+// GENERAZIONE, CACHING E OUTPUT GIF ANIMATA
 // ============================================================================
 
 try {
-    // Crea la GIF animata
-    // Parametri: frames, delays, loops (0 = infinito), RGB trasparenza (non usato)
-    $gif = new AnimatedGif($frames, $delays, 0);
-    
-    // Invia la GIF al browser
-    $gif->display();
-    
+	// Genera la GIF ma cattura l'output invece di inviarlo subito
+	ob_start();
+	$gif = new AnimatedGif($frames, $delays, 0);
+	$gif->display();     // scrive in output buffer
+	$gifData = ob_get_clean();
+
+	// Salva la GIF in cache
+	$cache->store($gifData);
+
+	// Invia al browser
+	header('Content-Type: image/gif');
+	echo $gifData;
+
 } catch (Exception $e) {
-    http_response_code(500);
-    die("Errore nella generazione della GIF: " . $e->getMessage());
+	http_response_code(500);
+	die("Errore nella generazione della GIF: " . $e->getMessage());
 }
