@@ -17,6 +17,9 @@ require_once 'AnimatedGif.php';
 require_once 'CacheManager.php';
 use EmailTimer\CacheManager;
 
+//Carica il parametro time dalla query string
+$time = $_GET['time'] ?? null;
+
 // ============================================================================
 // CACHE
 // ============================================================================
@@ -24,12 +27,14 @@ use EmailTimer\CacheManager;
 // CONFIGURAZIONE CACHE
 // ============================================================================
 const CACHE_DIR = __DIR__ . '/cache';
-const CACHE_FILENAME = 'countdown.gif';
+const CACHE_FILENAME = 'countdown';
 const CACHE_TIMETOLIVE = 60; //TTL IN SECONDI
+
+$cacheFilename = CACHE_FILENAME."_".md5($time).".gif";
 
 $cache = new CacheManager(
 	CACHE_DIR,  // cartella cache
-	CACHE_FILENAME,
+	$cacheFilename,
 	CACHE_TIMETOLIVE // TTL in secondi
 );
 
@@ -66,10 +71,8 @@ date_default_timezone_set(TIME_ZONE);
 // ============================================================================
 
 /**
- * Recupera e valida i parametri dalla query string
+ * Valida il parametro time dalla query string
  */
-$time = $_GET['time'] ?? null;
-
 // Validazione del parametro time
 if (!$time) {
     http_response_code(403);
