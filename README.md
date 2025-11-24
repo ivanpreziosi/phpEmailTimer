@@ -266,12 +266,6 @@ echo '<img src="path_to_the_library/index.php?time=' . urlencode($deadline) . '"
 
 ---
 
-## Security Considerations
-
-* Ensure access to this script is rate-limited if used publicly.
-
----
-
 ## Error Handling
 
 The script returns meaningful HTTP status codes:
