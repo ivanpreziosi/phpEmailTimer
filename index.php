@@ -19,7 +19,12 @@ use EmailTimer\CacheManager;
 
 //Carica il parametro time dalla query string
 $time = $_GET['time'] ?? null;
-
+//Carica il nome del background image file
+$bg = $_GET['bg'] ?? "base";
+$bg = $bg.".png";
+//Carica il nome del font
+$font = $_GET['font'] ?? "font";
+$font = $font.".ttf";
 // ============================================================================
 // CACHE
 // ============================================================================
@@ -30,7 +35,8 @@ const CACHE_DIR = __DIR__ . '/cache';
 const CACHE_FILENAME = 'countdown';
 const CACHE_TIMETOLIVE = 60; //TTL IN SECONDI
 
-$cacheFilename = CACHE_FILENAME."_".md5($time).".gif";
+
+$cacheFilename = md5($time.$bg.$font).".gif";
 
 $cache = new CacheManager(
 	CACHE_DIR,  // cartella cache
@@ -53,8 +59,10 @@ if ($cached) {
 /**
  * Configurazione visuale del countdown
  */
-const BASE_IMAGE_PATH = __DIR__ . '/base.png';
-const FONT_PATH = __DIR__ . '/font.ttf';
+const BASE_IMAGE_FOLDER = __DIR__ . '/backgrounds/';
+//const BASE_IMAGE_PATH = __DIR__ . '/base.png';
+const BASE_FONT_FOLDER = __DIR__ . '/fonts/';
+//const FONT_PATH = __DIR__ . '/font.ttf';
 const FONT_SIZE = 60;
 const FONT_COLOR_RGB = ["r"=>255,"g"=>255,"b"=>255];
 const FONT_X_OFFSET = 60;
@@ -80,12 +88,12 @@ if (!$time) {
 }
 
 // Verifica esistenza file richiesti
-if (!file_exists(BASE_IMAGE_PATH)) {
+if (!file_exists(BASE_IMAGE_FOLDER.$bg)) {
     http_response_code(500);
     die("Errore: Immagine base non trovata");
 }
 
-if (!file_exists(FONT_PATH)) {
+if (!file_exists(BASE_FONT_FOLDER.$font)) {
     http_response_code(500);
     die("Errore: Font non trovato");
 }
@@ -119,7 +127,7 @@ for ($i = 0; $i < MAX_FRAMES; $i++) {
     $interval = date_diff($future_date, $now);
     
     // Carica l'immagine base per questo frame
-    $image = imagecreatefrompng(BASE_IMAGE_PATH);
+    $image = imagecreatefrompng(BASE_IMAGE_FOLDER.$bg);
     
     if ($image === false) {
         http_response_code(500);
@@ -149,7 +157,7 @@ for ($i = 0; $i < MAX_FRAMES; $i++) {
             FONT_X_OFFSET, 
             FONT_Y_OFFSET, 
             $fontColor, 
-            FONT_PATH, 
+            BASE_FONT_FOLDER.$font, 
             $text
         );
         
@@ -180,7 +188,7 @@ for ($i = 0; $i < MAX_FRAMES; $i++) {
             FONT_X_OFFSET, 
             FONT_Y_OFFSET, 
             $fontColor, 
-            FONT_PATH, 
+            BASE_FONT_FOLDER.$font, 
             $text
         );
         
