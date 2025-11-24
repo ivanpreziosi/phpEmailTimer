@@ -296,7 +296,6 @@ The script returns meaningful HTTP status codes:
 Pull requests are welcome!
 Areas that might benefit from improvement:
 
-* Optional caching layer (implemented in v2.1)
 * Variable GIF dimensions
 * Multiple themes or color schemes
 * Support for transparency-based rendering
