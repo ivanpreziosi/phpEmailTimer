@@ -4,6 +4,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/version-2.1-blue)
 ![GD Extension](https://img.shields.io/badge/GD-required-orange) <img src="hourglass.jpg" height="200" align="right"/>
+<br>
 This library generates an animated GIF that visualizes a live countdown to a target date/time.
 Each frame represents one second, up to a configurable maximum. <br><br>
 It is based on (and updated from) the original project by goors/php-gif-countdown, extended with improved rendering, validation, and configuration options. <br><br>
@@ -65,16 +66,6 @@ Clone the repository:
 ```bash
 git clone https://github.com/<your-username>/<your-repo>.git
 cd <your-repo>
-```
-
-Ensure the following files exist in the repository root:
-
-```
-base.png
-font.ttf
-AnimatedGif.php
-CacheManager.php
-index.php
 ```
 
 Make sure your server has the GD extension enabled:
@@ -169,20 +160,22 @@ You can override background and font per request:
 ?time=2025-12-31%2023:59:59&bg=dark&font=digital
 ```
 
-If omitted, the script falls back to the defaults defined in the constants.
+If omitted, the script falls back to the defaults *DEFAULT_BACKGROUND_NAME* for the background and *DEFAULT_FONT_NAME* for the fonts.
 
 Editable constants are defined near the top of the script:
 
 ```php
 const BASE_IMAGE_FOLDER = __DIR__ . '/backgrounds/';
 const BASE_FONT_FOLDER = __DIR__ . '/fonts/';
-const FONT_SIZE       = 60;
-const FONT_COLOR_RGB  = ["r"=>255, "g"=>255, "b"=>255];
-const FONT_X_OFFSET   = 60;
-const FONT_Y_OFFSET   = 95;
-const FRAME_DELAY     = 100; // centiseconds (100 = 1s)
-const MAX_FRAMES      = 60;  // total GIF frames
-const TIME_ZONE       = 'Europe/Rome';
+const DEFAULT_BACKGROUND_NAME = 'base'; // omit extension (.png)
+const DEFAULT_FONT_NAME = 'font'; // omit extension (.ttf)
+const FONT_SIZE = 60;
+const FONT_COLOR_RGB = ["r" => 255, "g" => 255, "b" => 255];
+const FONT_X_OFFSET = 60;
+const FONT_Y_OFFSET = 95;
+const FRAME_DELAY = 100; // Ritardo tra frame in centisecondi (100 = 1 secondo)
+const MAX_FRAMES = 60;   // Numero massimo di frame da generare
+const TIME_ZONE = 'Europe/Rome';   // Numero massimo di frame da generare
 ```
 
 ### What You Can Customize
