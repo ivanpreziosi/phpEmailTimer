@@ -104,13 +104,13 @@ Example:
 | Parameter         | Description                                                                                        |
 | ----------------- | -------------------------------------------------------------------------------------------------- |
 | `time`            | Target date/time for the countdown (timestamp or any format supported by `strtotime()`)            |
-| `bg` (optional)   | Selects a background PNG file (must exist in the `backgrounds/` directory). Example: `bg=dark.png` |
-| `font` (optional) | Selects a TrueType font file (must exist in the `fonts/` directory). Example: `font=roboto.ttf`    |
+| `bg` (optional)   | Selects a background PNG file (must exist in the `backgrounds/` directory). Example: `bg=dark`     |
+| `font` (optional) | Selects a TrueType font file (must exist in the `fonts/` directory). Example: `font=roboto`        |
 
 Example using multiple parameters:
 
 ```html
-<img src="path_to_the_library/index.php?time=2025-07-20T18:00:00&bg=dark.png&font=led.ttf">
+<img src="path_to_the_library/index.php?time=2025-07-20T18:00:00&bg=dark&font=led">
 ```
 
 Example With URL Encoding
@@ -166,7 +166,7 @@ fonts/
 You can override background and font per request:
 
 ```
-?time=2025-12-31%2023:59:59&bg=dark.png&font=digital.ttf
+?time=2025-12-31%2023:59:59&bg=dark&font=digital
 ```
 
 If omitted, the script falls back to the defaults defined in the constants.
@@ -174,8 +174,8 @@ If omitted, the script falls back to the defaults defined in the constants.
 Editable constants are defined near the top of the script:
 
 ```php
-const BASE_IMAGE_PATH = __DIR__ . '/base.png';
-const FONT_PATH       = __DIR__ . '/font.ttf';
+const BASE_IMAGE_FOLDER = __DIR__ . '/backgrounds/';
+const BASE_FONT_FOLDER = __DIR__ . '/fonts/';
 const FONT_SIZE       = 60;
 const FONT_COLOR_RGB  = ["r"=>255, "g"=>255, "b"=>255];
 const FONT_X_OFFSET   = 60;
@@ -197,9 +197,9 @@ const TIME_ZONE       = 'Europe/Rome';
 
 ---
 
-## 🗄️ Caching System (Optional)
+## Caching System (Optional)
 
-Starting from version **2.1**, the library includes a lightweight caching layer that prevents excessive regeneration of the GIF countdown.
+Starting from version **1.2**, the library includes a lightweight caching layer that prevents excessive regeneration of the GIF countdown.
 
 ### Why Caching?
 

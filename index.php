@@ -60,9 +60,7 @@ if ($cached) {
  * Configurazione visuale del countdown
  */
 const BASE_IMAGE_FOLDER = __DIR__ . '/backgrounds/';
-//const BASE_IMAGE_PATH = __DIR__ . '/base.png';
 const BASE_FONT_FOLDER = __DIR__ . '/fonts/';
-//const FONT_PATH = __DIR__ . '/font.ttf';
 const FONT_SIZE = 60;
 const FONT_COLOR_RGB = ["r"=>255,"g"=>255,"b"=>255];
 const FONT_X_OFFSET = 60;
