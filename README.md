@@ -25,18 +25,6 @@ It is based on (and updated from) the original project by goors/php-gif-countdow
 
 * Optional filesystem-based caching to reduce server load
 
-* Generates a second-by-second animated GIF countdown
-
-* Customizable background image, font, size, and offsets
-
-* Anti-aliased text rendering with alpha preservation
-
-* Fully timezone-aware countdown calculation
-
-* Zero-padding and formatting for multi-day countdowns
-
-* Optional filesystem-based caching to reduce server load (1 GIF per minute per unique timestamp)
-
 ---
 
 ## Requirements
@@ -48,14 +36,6 @@ It is based on (and updated from) the original project by goors/php-gif-countdow
 * At least one PNG background in the `backgrounds/` folder
 
 * At least one TrueType font in the `fonts/` folder
-
-* **PHP 7.4+**
-
-* **GD Extension** with TrueType font support
-
-* A PNG base image (`base.png`)
-
-* A TrueType font file (`font.ttf`)
 
 ---
 
