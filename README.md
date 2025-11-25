@@ -207,10 +207,10 @@ The caching system ensures:
 
 ### How It Works
 
-Each request is keyed using the `time` parameter:
+Each request is keyed using the `time`, `bg` and `font`  parameters:
 
 ```
-countdown_<md5($time)>.gif
+$cacheFilename = md5($time . $bg . $font) . ".gif";
 ```
 
 The generated GIF is stored in the `cache/` directory.
@@ -235,10 +235,10 @@ No configuration is required.
 ### Cache Lifetime
 
 The default TTL is **60 seconds**.
-You may change it in the script where `CacheManager` is initialized:
+You may change it modifying the CACHE_TIMETOLIVE constant in the cache config section:
 
 ```php
-$cache = new CacheManager(__DIR__ . '/cache', $cacheKey, 60);
+const CACHE_TIMETOLIVE = 60; //TTL IN SECONDS
 ```
 
 ---
@@ -256,6 +256,7 @@ $cache = new CacheManager(__DIR__ . '/cache', $cacheKey, 60);
 
 ```html
 <img src="https://example.com/path_to_the_library/index.php?time={{deadline}}">
+<img src="https://example.com/path_to_the_library/index.php?time={{deadline}}&bg=my_bg_filename&font=my_ttf_font_filename">
 ```
 
 ### 3. Display in a Dashboard or Admin Panel
@@ -278,19 +279,11 @@ The script returns meaningful HTTP status codes:
 
 ---
 
-## Contributing
-
-Pull requests are welcome!
-Areas that might benefit from improvement:
-
-* Variable GIF dimensions
-* Multiple themes or color schemes
-* Support for transparency-based rendering
-* Composer packaging
-
----
-
 ## Changelog
+
+### v2.0.1
+
+* Updated README accordingly
 
 ### v2.0
 
