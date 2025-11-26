@@ -1,78 +1,116 @@
 <?php
 
 /**
- * AnimatedGif - Classe per la creazione di GIF animate
- * 
- * Questa classe permette di combinare più immagini GIF statiche in una singola GIF animata,
- * gestendo ritardi tra i frame, loop infiniti e trasparenza.
- * 
+ * AnimatedGif - Class for generating animated GIF files
+ *
+ * This class takes multiple static GIF images (provided as raw binary strings)
+ * and combines them into a single animated GIF. It handles frame delays,
+ * loop counts, disposal methods, transparency, global/local color tables,
+ * and correct GIF89a formatting.
+ *
+ * The internal process includes validating each source GIF, extracting its
+ * logical screen parameters, ensuring it is not already an animated GIF,
+ * then assembling a final animation by adding a proper GIF89a header,
+ * application extensions (for looping), graphic control blocks for each
+ * frame, image descriptors, color tables, compressed image data, and
+ * finally a closing trailer.
+ *
+ * This implementation is meant for full control over the GIF creation
+ * pipeline, useful when generating animations dynamically, when precise
+ * handling of palette, transparency or timing is required, or for systems
+ * with tight control over binary output.
+ *
  * @author  Ivan Preziosi - forked and updated from https://github.com/goors/php-gif-countdown
  * @version 2.2
  */
 class AnimatedGif
 {
     /**
-     * @var string Buffer contenente i dati binari della GIF finale
+     * @var string Binary buffer holding the final GIF animation.
+     *
+     * As frames are processed, this variable accumulates all the binary
+     * sections required by the GIF89a format, eventually forming a
+     * complete, playable GIF file.
      */
     private $image = '';
 
     /**
-     * @var array Buffer contenente le immagini GIF sorgente
+     * @var array Stores all validated source GIF images.
+     *
+     * Each element contains the raw binary data of an input image. These
+     * GIFs must be valid static GIF files. Animated GIFs are rejected to
+     * avoid nested animations or conflicts with internal control blocks.
      */
     private $buffer = [];
 
     /**
-     * @var int Numero di loop dell'animazione (0 = infinito)
+     * @var int Number of animation loops. 0 means infinite looping.
+     *
+     * In GIF terminology, a loop count is encoded inside a NETSCAPE2.0
+     * application extension block that signals viewers to repeat the
+     * animation the specified number of times.
      */
     private $number_of_loops = 0;
 
     /**
-     * @var int Metodo di disposizione del frame (2 = ripristina area con colore di sfondo)
+     * @var int Frame disposal method.
+     *
+     * The default (2) restores the background color for the area occupied
+     * by the previous frame. This helps prevent unwanted artifacts when
+     * frame durations, sizes, or palettes differ.
      */
     private $DIS = 2;
 
     /**
-     * @var int Colore trasparente codificato in formato RGB (24-bit packed integer)
+     * @var int Packed 24-bit RGB value for transparency (-1 = disabled).
+     *
+     * Transparency is supported only for colors present in a frame's local
+     * or global color table. If enabled, the class searches for a matching
+     * color entry in the palette to encode its index in the Graphic
+     * Control Extension.
      */
     private $transparent_colour = -1;
 
     /**
-     * @var bool Flag per tracciare se stiamo processando il primo frame
+     * @var bool Tracks whether the class is processing the very first frame.
+     *
+     * Useful to decide palette handling: the first frame often supplies the
+     * global color table, while subsequent frames may have local tables
+     * that need to be compared or merged.
      */
     private $first_frame = true;
 
     /**
-     * Costruttore della classe AnimatedGif
-     * 
-     * @param array $source_images Array di stringhe contenenti i dati binari delle GIF sorgente
-     * @param array $image_delays Array di interi con il ritardo in centisecondi (1/100s) per ogni frame
-     * @param int $number_of_loops Numero di ripetizioni (0 = infinito, -1 = default a 0)
-     * @param int $transparent_colour_red Componente rosso del colore trasparente (0-255, -1 = nessuna trasparenza)
-     * @param int $transparent_colour_green Componente verde del colore trasparente (0-255, -1 = nessuna trasparenza)
-     * @param int $transparent_colour_blue Componente blu del colore trasparente (0-255, -1 = nessuna trasparenza)
-     * 
-     * @throws Exception Se una delle immagini sorgente non è una GIF valida o è già animata
+     * Constructor
+     *
+     * Loads and validates all source GIFs, applies configuration (delays,
+     * loop count, optional transparency), builds the GIF header, and
+     * sequentially assembles each frame.
+     *
+     * @param array $source_images Raw GIF data strings.
+     * @param array $image_delays Delay (in 1/100s) for each frame.
+     * @param int   $number_of_loops Number of repetitions (0 = infinite,
+     *                                -1 = interpreted as 0).
+     * @param int   $transparent_colour_red   Red channel for transparency.
+     * @param int   $transparent_colour_green Green channel.
+     * @param int   $transparent_colour_blue  Blue channel.
+     *
+     * @throws Exception If a source image is invalid or already animated.
      */
     public function __construct(
-        array $source_images, 
-        array $image_delays, 
-        $number_of_loops, 
-        $transparent_colour_red = -1, 
-        $transparent_colour_green = -1, 
+        array $source_images,
+        array $image_delays,
+        $number_of_loops,
+        $transparent_colour_red = -1,
+        $transparent_colour_green = -1,
         $transparent_colour_blue = -1
     ) {
-        // Valida e imposta il numero di loop
         $this->number_of_loops = ($number_of_loops > -1) ? $number_of_loops : 0;
-        
-        // Imposta il colore trasparente se specificato
         $this->set_transparent_colour($transparent_colour_red, $transparent_colour_green, $transparent_colour_blue);
-        
-        // Carica e valida le immagini sorgente
         $this->buffer_images($source_images);
 
-        // Costruisce la GIF animata
         $this->addHeader();
-        
+
         $frame_count = count($this->buffer);
         for ($i = 0; $i < $frame_count; $i++) {
             $this->addFrame($i, $image_delays[$i]);
@@ -80,67 +118,56 @@ class AnimatedGif
     }
 
     /**
-     * Imposta il colore trasparente per l'animazione
-     * 
-     * Codifica i valori RGB in un singolo intero a 24-bit per un confronto efficiente.
-     * Formato: 0xRRGGBB (rosso nei bit più significativi)
-     * 
-     * @param int $red Componente rosso (0-255, -1 per disabilitare)
-     * @param int $green Componente verde (0-255, -1 per disabilitare)
-     * @param int $blue Componente blu (0-255, -1 per disabilitare)
+     * Sets the transparent color (if requested).
+     *
+     * Packs the RGB components into a single 24-bit integer for easy
+     * comparison with palette entries. If any component is negative,
+     * transparency is disabled.
      */
     private function set_transparent_colour($red, $green, $blue)
     {
-        // Se tutti i componenti sono validi (>= 0), codifica in formato packed
         if ($red > -1 && $green > -1 && $blue > -1) {
-            // Bit shifting: R | (G << 8) | (B << 16) = 0xBBGGRR
             $this->transparent_colour = $red | ($green << 8) | ($blue << 16);
         } else {
-            // -1 indica nessuna trasparenza
             $this->transparent_colour = -1;
         }
     }
 
     /**
-     * Carica e valida le immagini GIF sorgente
-     * 
-     * Verifica che ogni immagine sia:
-     * 1. Una GIF valida (header GIF87a o GIF89a)
-     * 2. Non già animata (controlla l'estensione NETSCAPE)
-     * 
-     * @param array $source_images Array di dati binari delle GIF
-     * @throws Exception Se un'immagine non è valida o è già animata
+     * Loads and validates each source GIF.
+     *
+     * Ensures:
+     * 1. The header is a valid GIF87a or GIF89a signature.
+     * 2. The image is not animated (searches for a NETSCAPE loop extension).
+     *
+     * Rejecting animated GIFs prevents conflicting control blocks.
+     *
+     * @throws Exception If validation fails.
      */
     private function buffer_images($source_images)
     {
         $image_count = count($source_images);
-        
+
         for ($i = 0; $i < $image_count; $i++) {
             $this->buffer[] = $source_images[$i];
-            
-            // Verifica il magic number GIF (primi 6 byte)
+
             $header = substr($this->buffer[$i], 0, 6);
             if ($header != "GIF87a" && $header != "GIF89a") {
-                throw new Exception('L\'immagine alla posizione ' . $i . ' non è una GIF valida');
+                throw new Exception('Source image at index ' . $i . ' is not a valid GIF');
             }
 
-            // Calcola l'offset della color table globale
-            // Byte 10: packed field contenente flag e dimensione color table
-            // Formula: 13 (header + logical screen descriptor) + 3 * 2^(size+1) byte di color table
             $color_table_size = 2 << (ord($this->buffer[$i][10]) & 0x07);
             $offset = 13 + (3 * $color_table_size);
-            
-            // Scansiona i blocchi di dati per verificare se è già animata
+
             $continue_scan = true;
             for ($j = $offset; $continue_scan && $j < strlen($this->buffer[$i]); $j++) {
                 switch ($this->buffer[$i][$j]) {
-                    case "!": // Extension block
-                        // Verifica se c'è l'estensione NETSCAPE (indica GIF animata)
+                    case "!":
                         if (substr($this->buffer[$i], ($j + 3), 8) == "NETSCAPE") {
-                            throw new Exception('Non è possibile creare un\'animazione da una GIF già animata (posizione ' . $i . ')');
+                            throw new Exception('Cannot use animated GIF as input (index ' . $i . ')');
                         }
                         break;
-                    case ";": // Trailer (fine del file GIF)
+                    case ";":
                         $continue_scan = false;
                         break;
                 }
@@ -149,129 +176,107 @@ class AnimatedGif
     }
 
     /**
-     * Aggiunge l'header della GIF animata
-     * 
-     * Struttura dell'header:
-     * 1. Signature (6 byte): "GIF89a"
-     * 2. Logical Screen Descriptor (7 byte): dimensioni, color resolution, etc.
-     * 3. Global Color Table (se presente nella prima immagine)
-     * 4. Application Extension per il loop (se number_of_loops > 0)
+     * Builds the global header of the animated GIF.
+     *
+     * Includes:
+     * 1. GIF89a signature.
+     * 2. Logical Screen Descriptor copied from the first source image.
+     * 3. Global Color Table (if present).
+     * 4. Optional NETSCAPE2.0 loop extension.
      */
     private function addHeader()
     {
-        // Signature GIF89a (necessaria per le animazioni)
         $this->image = 'GIF89a';
 
-        // Verifica se la prima immagine ha una Global Color Table (bit più significativo del byte 10)
         if (ord($this->buffer[0][10]) & 0x80) {
-            // Calcola la dimensione della color table
             $color_map_size = 3 * (2 << (ord($this->buffer[0][10]) & 0x07));
-            
-            // Copia Logical Screen Descriptor (7 byte: width, height, packed fields, bg color, aspect ratio)
             $this->image .= substr($this->buffer[0], 6, 7);
-            
-            // Copia Global Color Table
             $this->image .= substr($this->buffer[0], 13, $color_map_size);
-            
-            // Aggiunge Application Extension per il looping (estensione NETSCAPE2.0)
+
             if ($this->number_of_loops > 0) {
-                $this->image .= "!\377\13NETSCAPE2.0\3\1" . 
-                               $this->word($this->number_of_loops) . 
+                $this->image .= "!\377\13NETSCAPE2.0\3\1" .
+                               $this->word($this->number_of_loops) .
                                "\0";
             }
         }
     }
 
     /**
-     * Aggiunge un singolo frame all'animazione
-     * 
-     * Processa ogni frame aggiungendo:
-     * 1. Graphic Control Extension (ritardo, trasparenza, disposal method)
-     * 2. Image Descriptor
-     * 3. Local Color Table (se diversa dalla globale)
-     * 4. Dati dell'immagine compressi
-     * 
-     * @param int $frame Indice del frame nel buffer
-     * @param int $delay Ritardo in centisecondi (1/100s) prima del prossimo frame
+     * Adds a frame to the animation.
+     *
+     * Each frame requires:
+     * - A Graphic Control Extension (for delay, disposal, transparency).
+     * - An Image Descriptor (position, size, palette flags).
+     * - Optional Local Color Table.
+     * - LZW-compressed image data.
+     *
+     * The method reconstructs the relevant sections from the source GIF,
+     * adapting them to the global animation structure.
      */
     private function addFrame($frame, $delay)
     {
-        // Calcola l'offset dove iniziano i dati dell'immagine (dopo header e color table)
         $locals_str_offset = 13 + 3 * (2 << (ord($this->buffer[$frame][10]) & 0x07));
         $locals_end_length = strlen($this->buffer[$frame]) - $locals_str_offset - 1;
         $locals_tmp = substr($this->buffer[$frame], $locals_str_offset, $locals_end_length);
 
-        // Ottieni informazioni sulle color table
         $global_len = 2 << (ord($this->buffer[0][10]) & 0x07);
         $locals_len = 2 << (ord($this->buffer[$frame][10]) & 0x07);
         $global_rgb = substr($this->buffer[0], 13, 3 * $global_len);
         $locals_rgb = substr($this->buffer[$frame], 13, 3 * $locals_len);
 
-        // Crea Graphic Control Extension
-        // Struttura: Extension Introducer (!) + Label (F9) + Block Size (04) + Packed Field + Delay + Transparent Index + Block Terminator
-        $locals_ext = "!\xF9\x04" . 
-                     chr(($this->DIS << 2)) .  // Disposal method (bits 2-4)
-                     chr(($delay >> 0) & 0xFF) . // Delay low byte
-                     chr(($delay >> 8) & 0xFF) . // Delay high byte
-                     "\x0\x0"; // Transparent color index (0) + Block Terminator
+        $locals_ext = "!\xF9\x04" .
+                      chr(($this->DIS << 2)) .
+                      chr(($delay >> 0) & 0xFF) .
+                      chr(($delay >> 8) & 0xFF) .
+                      "\x0\x0";
 
-        // Gestione della trasparenza
         if ($this->transparent_colour > -1 && (ord($this->buffer[$frame][10]) & 0x80)) {
-            // Cerca il colore trasparente nella Local Color Table
             for ($j = 0; $j < $locals_len; $j++) {
                 $r = ord($locals_rgb[3 * $j + 0]);
                 $g = ord($locals_rgb[3 * $j + 1]);
                 $b = ord($locals_rgb[3 * $j + 2]);
-                
-                // Confronta con il colore trasparente (decodifica da formato packed)
+
                 if ($r == (($this->transparent_colour >> 16) & 0xFF) &&
                     $g == (($this->transparent_colour >> 8) & 0xFF) &&
                     $b == (($this->transparent_colour >> 0) & 0xFF)) {
-                    
-                    // Imposta il flag di trasparenza (bit 0) e l'indice del colore trasparente
-                    $locals_ext = "!\xF9\x04" . 
-                                 chr(($this->DIS << 2) + 1) . // Disposal + transparency flag
-                                 chr(($delay >> 0) & 0xFF) . 
-                                 chr(($delay >> 8) & 0xFF) . 
-                                 chr($j) . // Indice del colore trasparente
-                                 "\x0";
+
+                    $locals_ext = "!\xF9\x04" .
+                                  chr(($this->DIS << 2) + 1) .
+                                  chr(($delay >> 0) & 0xFF) .
+                                  chr(($delay >> 8) & 0xFF) .
+                                  chr($j) .
+                                  "\x0";
                     break;
                 }
             }
         }
 
-        // Estrae Image Descriptor e dati immagine
         $locals_img = "";
         switch ($locals_tmp[0]) {
-            case "!": // Extension block prima dell'immagine
+            case "!":
                 $locals_img = substr($locals_tmp, 8, 10);
                 $locals_tmp = substr($locals_tmp, 18);
                 break;
-            case ",": // Image Descriptor diretto
+            case ",":
                 $locals_img = substr($locals_tmp, 0, 10);
                 $locals_tmp = substr($locals_tmp, 10);
                 break;
         }
 
-        // Gestione della Local Color Table
         if ((ord($this->buffer[$frame][10]) & 0x80) && !$this->first_frame) {
-            // Se le color table sono identiche, usa quella globale
-            if ($global_len == $locals_len && 
+            if ($global_len == $locals_len &&
                 $this->blockCompare($global_rgb, $locals_rgb, $global_len)) {
                 $this->image .= ($locals_ext . $locals_img . $locals_tmp);
             } else {
-                // Color table diversa: imposta il flag Local Color Table nell'Image Descriptor
-                $byte = ord($locals_img[9]); // Packed field dell'Image Descriptor
-                $byte |= 0x80;  // Imposta Local Color Table flag
-                $byte &= 0xF8;  // Pulisci i bit di dimensione
-                $byte |= (ord($this->buffer[$frame][10]) & 0x07); // Copia dimensione
+                $byte = ord($locals_img[9]);
+                $byte |= 0x80;
+                $byte &= 0xF8;
+                $byte |= (ord($this->buffer[$frame][10]) & 0x07);
                 $locals_img[9] = chr($byte);
-                
-                // Aggiungi con Local Color Table
+
                 $this->image .= ($locals_ext . $locals_img . $locals_rgb . $locals_tmp);
             }
         } else {
-            // Primo frame o nessuna Local Color Table
             $this->image .= ($locals_ext . $locals_img . $locals_tmp);
         }
 
@@ -279,24 +284,23 @@ class AnimatedGif
     }
 
     /**
-     * Aggiunge il trailer della GIF (marker di fine file)
+     * Appends the GIF trailer byte.
+     *
+     * This marks the end of the animated GIF.
      */
     private function addFooter()
     {
-        $this->image .= ";"; // GIF Trailer (0x3B)
+        $this->image .= ";";
     }
 
     /**
-     * Confronta due color table byte per byte
-     * 
-     * @param string $global_block Dati della Global Color Table
-     * @param string $local_block Dati della Local Color Table
-     * @param int $len Numero di colori da confrontare
-     * @return bool True se le color table sono identiche
+     * Compares two color tables byte-by-byte.
+     *
+     * Used to determine whether a frame's local palette matches the global
+     * palette. If identical, the local one can be omitted to reduce GIF size.
      */
     private function blockCompare($global_block, $local_block, $len)
     {
-        // Ogni colore è 3 byte (RGB)
         for ($i = 0; $i < $len; $i++) {
             if ($global_block[3 * $i + 0] != $local_block[3 * $i + 0] ||
                 $global_block[3 * $i + 1] != $local_block[3 * $i + 1] ||
@@ -308,13 +312,10 @@ class AnimatedGif
     }
 
     /**
-     * Converte un intero in formato little-endian a 2 byte
-     * 
-     * Utilizzato per codificare valori come ritardi e numero di loop
-     * nel formato richiesto dalla specifica GIF
-     * 
-     * @param int $int Valore intero (0-65535)
-     * @return string 2 byte in formato little-endian
+     * Encodes an integer into a 2-byte little-endian binary string.
+     *
+     * Required by the GIF format for storing values such as delay and loop
+     * count inside extensions.
      */
     private function word($int)
     {
@@ -322,9 +323,7 @@ class AnimatedGif
     }
 
     /**
-     * Restituisce i dati binari della GIF animata
-     * 
-     * @return string Dati binari della GIF completa
+     * Returns the complete binary animated GIF.
      */
     public function getAnimation()
     {
@@ -332,9 +331,7 @@ class AnimatedGif
     }
 
     /**
-     * Invia la GIF animata direttamente al browser
-     * 
-     * Imposta gli header HTTP appropriati e invia i dati binari
+     * Outputs the GIF directly to the browser with appropriate headers.
      */
     public function display()
     {
