@@ -7,7 +7,7 @@
  * gestendo ritardi tra i frame, loop infiniti e trasparenza.
  * 
  * @author  Ivan Preziosi - forked and updated from https://github.com/goors/php-gif-countdown
- * @version 1.0
+ * @version 2.2
  */
 class AnimatedGif
 {

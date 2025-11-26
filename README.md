@@ -153,8 +153,8 @@ const FONT_SIZE = 60;
 const FONT_COLOR_RGB = ["r" => 255, "g" => 255, "b" => 255];
 const FONT_X_OFFSET = 60;
 const FONT_Y_OFFSET = 95;
-const FRAME_DELAY = 100; // Ritardo tra frame in centisecondi (100 = 1 secondo)
-const MAX_FRAMES = 60;   // Numero massimo di frame da generare
+const FRAME_DELAY = 100; // Delay between frames in centiseconds (100 = 1 second)
+const MAX_FRAMES = 60;   // Maximum number of frames to generate
 const TIME_ZONE = 'Europe/Rome';   // Time Zone
 ```
 
