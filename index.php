@@ -36,7 +36,7 @@ const FONT_X_OFFSET = 60;
 const FONT_Y_OFFSET = 95;
 const FRAME_DELAY = 100; // Ritardo tra frame in centisecondi (100 = 1 secondo)
 const MAX_FRAMES = 60;   // Numero massimo di frame da generare
-const TIME_ZONE = 'Europe/Rome';   // Numero massimo di frame da generare
+const TIME_ZONE = 'Europe/Rome';   // Time Zone
 
 // Imposta il timezone per calcoli di data/ora corretti
 date_default_timezone_set(TIME_ZONE);
