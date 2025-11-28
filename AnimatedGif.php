@@ -21,7 +21,7 @@
  * with tight control over binary output.
  *
  * @author  Ivan Preziosi - forked and updated from https://github.com/goors/php-gif-countdown
- * @version 2.2
+ * @version 2.3
  */
 class AnimatedGif
 {

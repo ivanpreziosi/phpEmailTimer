@@ -13,7 +13,7 @@
  * - font : font file name, without extension (must be a .ttf)
  * 
  * @author: Ivan Preziosi - forked and updated from https://github.com/goors/php-gif-countdown
- * @version: 2.2
+ * @version: 2.3
  */
 
 // Load class for generating animated GIFs
@@ -56,6 +56,9 @@ $bg = $bg . ".png";
 // Load font name
 $font = $_GET['font'] ?? DEFAULT_FONT_NAME;
 $font = $font . ".ttf";
+// Load font offset from query string
+$fontXOffset = $_GET['x-offset'] ?? FONT_X_OFFSET;
+$fontYOffset = $_GET['y-offset'] ?? FONT_Y_OFFSET;
 
 // ============================================================================
 // CACHE
@@ -68,7 +71,7 @@ const CACHE_DIR = __DIR__ . '/cache';
 const CACHE_FILENAME = 'countdown';
 const CACHE_TIMETOLIVE = 60; // TTL in seconds
 
-$cacheFilename = md5($time . $bg . $font) . ".gif";
+$cacheFilename = md5($time . $bg . $font . $fontXOffset . $fontYOffset) . ".gif";
 
 $cache = new CacheManager(
 	CACHE_DIR,         // cache directory
@@ -165,8 +168,8 @@ for ($i = 0; $i < MAX_FRAMES; $i++) {
 			$image,
 			FONT_SIZE,
 			0,              // Rotation angle
-			FONT_X_OFFSET,
-			FONT_Y_OFFSET,
+			$fontXOffset,
+			$fontYOffset,
 			$fontColor,
 			BASE_FONT_FOLDER . $font,
 			$text
@@ -195,8 +198,8 @@ for ($i = 0; $i < MAX_FRAMES; $i++) {
 			$image,
 			FONT_SIZE,
 			0,
-			FONT_X_OFFSET,
-			FONT_Y_OFFSET,
+			$fontXOffset,
+			$fontYOffset,
 			$fontColor,
 			BASE_FONT_FOLDER . $font,
 			$text

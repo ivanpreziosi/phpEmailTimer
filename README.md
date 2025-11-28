@@ -72,16 +72,18 @@ Example:
 
 ### GET Parameters
 
-| Parameter         | Description                                                                                        |
-| ----------------- | -------------------------------------------------------------------------------------------------- |
-| `time`            | Target date/time for the countdown (timestamp or any format supported by `strtotime()`)            |
-| `bg` (optional)   | Selects a background PNG file (must exist in the `backgrounds/` directory). Example: `bg=dark`     |
-| `font` (optional) | Selects a TrueType font file (must exist in the `fonts/` directory). Example: `font=roboto`        |
+| Parameter             | Description                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| `time`                | Target date/time for the countdown (timestamp or any format supported by `strtotime()`)            |
+| `bg` (optional)       | Selects a background PNG file (must exist in the `backgrounds/` directory). Example: `bg=dark`     |
+| `font` (optional)     | Selects a TrueType font file (must exist in the `fonts/` directory). Example: `font=roboto`        |
+| `x-offset` (optional) | Define horizontal offset for text. Example: `x-offset=150`                                         |
+| `y-offset` (optional) | Define vertical offset for text. Example: `y-offset=150`                                         |
 
 Example using multiple parameters:
 
 ```html
-<img src="path_to_the_library/index.php?time=2025-07-20T18:00:00&bg=dark&font=led">
+<img src="path_to_the_library/index.php?time=2025-07-20T18:00:00&bg=dark&font=led&x-offset=100&y-offset=100">
 ```
 
 Example With URL Encoding
@@ -187,10 +189,10 @@ The caching system ensures:
 
 ### How It Works
 
-Each request is keyed using the `time`, `bg` and `font`  parameters:
+Each request is keyed using the `time`, `bg`, `font`, `x-offset`, `y-offset` parameters:
 
 ```
-$cacheFilename = md5($time . $bg . $font) . ".gif";
+$cacheFilename = md5($time . $bg . $font . $fontXOffset . $fontYOffset) . ".gif";
 ```
 
 The generated GIF is stored in the `cache/` directory.
@@ -236,7 +238,7 @@ const CACHE_TIMETOLIVE = 60; //TTL IN SECONDS
 
 ```html
 <img src="https://example.com/path_to_the_library/index.php?time={{deadline}}">
-<img src="https://example.com/path_to_the_library/index.php?time={{deadline}}&bg=my_bg_filename&font=my_ttf_font_filename">
+<img src="https://example.com/path_to_the_library/index.php?time={{deadline}}&bg=my_bg_filename&font=my_ttf_font_filename&x-offset=100&y-offset=100">
 ```
 
 ### 3. Display in a Dashboard or Admin Panel
@@ -260,6 +262,14 @@ The script returns meaningful HTTP status codes:
 ---
 
 ## Changelog
+
+### v2.3
+
+* Added optional get parameters "x-offset" and "y-offset"
+
+### v2.2
+
+* Updated README and extended comments in code.
 
 ### v2.0.1
 

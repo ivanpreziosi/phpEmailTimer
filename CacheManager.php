@@ -16,7 +16,7 @@ namespace EmailTimer;
  * - Retrieve cached file paths only if they are not expired.
  * 
  * @author: Ivan Preziosi
- * @version: 2.2
+ * @version: 2.3
  */
 class CacheManager
 {
