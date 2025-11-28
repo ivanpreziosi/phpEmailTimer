@@ -2,7 +2,7 @@
 
 ![PHP Version](https://img.shields.io/badge/php-%3E%3D7.4-777bb4)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/version-2.1-blue)
+![Status](https://img.shields.io/badge/version-2.2-blue)
 ![GD Extension](https://img.shields.io/badge/GD-required-orange) <img src="hourglass.jpg" height="200" align="right"/>
 <br>
 This library generates an animated GIF that visualizes a live countdown to a target date/time.
