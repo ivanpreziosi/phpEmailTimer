@@ -17,6 +17,8 @@ It is based on (and updated from) the original project by goors/php-gif-countdow
 
 * Customizable **font per request** via `font=...`
 
+* Customizable offset to precisely position your text
+
 * Anti-aliased text rendering with alpha preservation
 
 * Fully timezone-aware countdown calculation
